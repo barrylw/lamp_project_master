@@ -944,7 +944,7 @@ int8_t SX1276LoRaGetPacketSnr( void );
  *
  * \retval rssiValue Current RSSI value in [dBm]
  */
-double SX1276LoRaGetPacketRssi( void );
+u8 SX1276LoRaGetPacketRssi( void );
 
 /*!
  * \brief Sets the radio in Rx mode. Waiting for a packet
@@ -1011,7 +1011,7 @@ void printData(u8 *pBufer,u8 length);
 void config_GDOx_Map(st_GDOx_Config GDOx_Map);
 void sx1276RxFinishProcess(void);
 int8_t getPacketSnr(void);
-double get_RxPacketRssi(void);
+u8 get_RxPacketRssi(void);
 
 double SX1276LoRaGetSymbolTs(uint8_t BwFlag ,uint8_t SF);
 double SX1276LoRaGetTimeOnAir(u8 paylod);

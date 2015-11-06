@@ -66,8 +66,8 @@ extern u8 test2[];
 extern sRF_FSK g_fsk ;
 extern st_RF_LoRa_DypeDef g_RF_LoRa;
 bool g_slaveMode = true;
-//static u16 txcount = 0;
-//static u16 rxCount = 0;
+static u16 txcount = 0;
+static u16 rxCount = 0;
 extern u8 tedtbuf[];
 struct etimer timer_rf; 
 
@@ -113,22 +113,36 @@ PROCESS_THREAD(hal_RF_process, ev, data)
           if (g_RF_LoRa.rf_DataBufferValid)
           {
               g_RF_LoRa.rf_DataBufferValid = false;
-              
+              rxCount++;
               LED_On(TX_LED);
               
               Delayms(100);
          
               hal_UartDMATx(COM1, g_RF_LoRa.rf_DataBuffer, g_RF_LoRa.rf_RxPacketSize);
         
-              printf("rssi = %f\r\n", SX1276LoRaGetPacketRssi());
-              printf("snr = %d\r\n",SX1276LoRaGetPacketSnr());
-         
+              printf("rssi = %d   snr = %d\r\n", SX1276LoRaGetPacketRssi(),SX1276LoRaGetPacketSnr());
+             
+              if (!g_slaveMode)
+              {
+                printf("rssi_slave = %d  txcount = %x  rxCount = %x\r\n", g_RF_LoRa.rf_DataBuffer[0], txcount ,rxCount);
+              }
+              
               for (u8 i = 0; i < g_RF_LoRa.rf_RxPacketSize; i++ )
               {
                 printf("%x ",g_RF_LoRa.rf_DataBuffer[i] );
               }
-              
               printf("\r\n");
+              
+              
+              if (g_slaveMode)
+              {
+                tedtbuf[0] = SX1276LoRaGetPacketRssi();
+                #ifndef USE_LORA_MODE
+                SX1276Fsk_Send_Packet(tedtbuf, g_RF_LoRa.rf_RxPacketSize);
+                #else
+                SX1276LoRa_Send_Packet(tedtbuf, g_RF_LoRa.rf_RxPacketSize);
+                #endif
+              }
         }
     }
     else if (ev == PROCESS_EVENT_TIMER)
@@ -252,7 +266,7 @@ PROCESS_THREAD(hal_RF_reset, ev, data)
 
 
 
-#if 0
+
 struct etimer test_send_timer; 
 PROCESS(hal_long_send, "long_send_process ");
 
@@ -298,7 +312,7 @@ PROCESS_THREAD(hal_long_send, ev, data)
   }
   PROCESS_END();
 }
-#endif
+
 
 /*****************************************************************************
  Prototype    : spiReadWriteByte

@@ -257,7 +257,7 @@ tSX1276LR* SX1276LR;
 
 static uint8_t RxGain = 1;
 static int8_t RxPacketSnrEstimate;
-static double RxPacketRssiValue;
+static u8 RxPacketRssiValue;
 
 st_GDOx_Config g_GDOx_map_conf;
 static uint32_t g_wokeUpPreambleLength;
@@ -596,7 +596,7 @@ int8_t SX1276LoRaGetPacketSnr( void )
  Date         : 2014/3/15
  Author       : Barry
 *****************************************************************************/
-double SX1276LoRaGetPacketRssi( void )
+u8 SX1276LoRaGetPacketRssi( void )
 {
     return RxPacketRssiValue;
 }
@@ -687,9 +687,10 @@ int8_t getPacketSnr(void)
  Date         : 2014/3/15
  Author       : Barry
 *****************************************************************************/
-double get_RxPacketRssi(void)
+u8 get_RxPacketRssi(void)
 {
     double RxPacketRssi;
+    u8     charRssi;
 
     SX1276Read( REG_LR_PKTRSSIVALUE, &SX1276LR->RegPktRssiValue );
 
@@ -715,8 +716,11 @@ double get_RxPacketRssi(void)
             RxPacketRssi = RSSI_OFFSET_HF + ( 1.0666 * ( ( double )SX1276LR->RegPktRssiValue ) );
         }
     }
-
-    return RxPacketRssi;
+    charRssi = (u8)RxPacketRssi;
+    
+    charRssi = (charRssi & 0x80) ? (~charRssi+1) : charRssi;
+   
+    return charRssi;
 }
 
 /*****************************************************************************
@@ -1319,7 +1323,7 @@ void EXTI0_IRQHandler(void)
                 RxPacketRssiValue   = get_RxPacketRssi();
                 RxPacketSnrEstimate = getPacketSnr();
                 RxEndProcess(false);
-                printf("rssi = %f\r\n",RxPacketRssiValue);
+                printf("rssi = %d\r\n",RxPacketRssiValue);
                 printf("snr = %d\r\n",SX1276LoRaGetPacketSnr());
                 printf("CRC error\r\n");
             }
