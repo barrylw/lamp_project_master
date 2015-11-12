@@ -233,7 +233,7 @@ tLoRaSettings LoRaSettings =
     #else
     492000000,
     #endif
-    14,                                     // Power
+    17,                                     // Power
     6,                                      // SignalBw [0: 7.8kHz, 1: 10.4 kHz, 2: 15.6 kHz, 3: 20.8 kHz, 4: 31.2 kHz,
                                             // 5: 41.6 kHz, 6: 62.5 kHz, 7: 125 kHz, 8: 250 kHz, 9: 500 kHz, other: Reserved]
     9,                                      // SpreadingFactor [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
@@ -261,7 +261,7 @@ static double RxPacketRssiValue;
 
 st_GDOx_Config g_GDOx_map_conf;
 static uint32_t g_wokeUpPreambleLength;
- uint8_t g_hopChannel = 5;
+ uint8_t g_hopChannel = 0;
 
 #define HOP_CHANNELS           50
 

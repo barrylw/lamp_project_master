@@ -46,8 +46,6 @@ int main()
   process_start(&hal_urat_process, NULL);
   process_start(&hal_RF_process, NULL);
   process_start(&hal_RF_reset, NULL);
-  
-  
   //process_start(&hal_long_send, NULL);
   //autostart_start(autostart_processes); 
   //start_continuous_mode();

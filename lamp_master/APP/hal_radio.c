@@ -66,8 +66,8 @@ extern u8 test2[];
 extern sRF_FSK g_fsk ;
 extern st_RF_LoRa_DypeDef g_RF_LoRa;
 bool g_slaveMode = true;
-//static u16 txcount = 0;
-//static u16 rxCount = 0;
+static u16 txcount = 0;
+static u16 rxCount = 0;
 extern u8 tedtbuf[];
 struct etimer timer_rf; 
 
@@ -252,7 +252,7 @@ PROCESS_THREAD(hal_RF_reset, ev, data)
 
 
 
-#if 0
+
 struct etimer test_send_timer; 
 PROCESS(hal_long_send, "long_send_process ");
 
@@ -298,7 +298,7 @@ PROCESS_THREAD(hal_long_send, ev, data)
   }
   PROCESS_END();
 }
-#endif
+
 
 /*****************************************************************************
  Prototype    : spiReadWriteByte

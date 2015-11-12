@@ -87,7 +87,7 @@ void hal_RunUartEvents(ST_EVENT_METHOD *pEvents)
         switch (eventCnt)
         {
           case 0://PrintEvent
-          {
+          { 
             hal_InitCOM(DEBUG_COM);
             PrintEvent.timeToExecute = GetSysTime() + PRINT_TOTAL_TIMEOUT;
             hal_UartDMATx(COM2, PRINT_TIMEOUT_ERROR, StrLen(PRINT_TIMEOUT_ERROR));
@@ -103,11 +103,12 @@ void hal_RunUartEvents(ST_EVENT_METHOD *pEvents)
           }
           case 3://UartRxEvent
           {
+            hal_InitCOM(COM1);
             LED_Off(RX_LED);
-      
             g_UartRxFlag.index = 0;
-            
             UartRxEvent.startoption = END;
+            apl_ProcessUartCmd();
+          
             break;
           }
           default:
@@ -446,7 +447,14 @@ u8 GetChecksum(u8 *pbuffer, u16 length)
   */
 void apl_ProcessUartCmd(void)
 {
-  DISP(printf("HAL:Uart Receive Packet:\r\n"););
+  //DISP(printf("HAL:Uart Receive Packet:\r\n"););
+  
+    #ifndef USE_LORA_MODE
+        SX1276Fsk_Send_Packet(g_UartRxBuffer, g_UartRxFlag.fLen);
+      #else
+        SX1276LoRa_Send_Packet(g_UartRxBuffer, g_UartRxFlag.fLen);
+      #endif
+  
 }
 
 /******************************************************************************/
@@ -492,53 +500,13 @@ void RBL_COM1_RX_IRQHandler(void)
     g_UartRxBuffer[g_UartRxFlag.index] = USART_ReceiveData(RBL_COM1);
 
     UartRxEvent.startoption = WAIT;
-    UartRxEvent.timeToExecute = GetSysTime() + 200;
+    UartRxEvent.timeToExecute = GetSysTime() + 100;
+    
+    g_UartRxFlag.index++;
+    g_UartRxFlag.fLen = g_UartRxFlag.index;
    
     LED_On(RX_LED);
-   
-   switch(g_UartRxFlag.index)
-   {
-    case 0:
-    {
-      if(g_UartRxBuffer[g_UartRxFlag.index] != 0x68)
-      {
-        g_UartRxFlag.index = 0;
-      }
-      else
-      {
-        g_UartRxFlag.index++;
-      }
-    }
-    break;
-    
-    
-    case 3:
-    {
-       g_UartRxFlag.fLen = (u16)g_UartRxBuffer[1] + g_UartRxBuffer[2]*256;
-       g_UartRxFlag.index++;
-    }
-    break;
-    
-   default:
-   {
-        g_UartRxFlag.index++;
-        
-        if ( g_UartRxFlag.index == g_UartRxFlag.fLen )
-        {
-          if ( (g_UartRxBuffer[g_UartRxFlag.index - 1] == 0x16) && (g_UartRxBuffer[g_UartRxFlag.index -2] == GetChecksum(g_UartRxBuffer +3, g_UartRxFlag.fLen-6 +1)))
-          {
-               UartRxEvent.startoption = FINISH;
-          }
-          else
-          {
-               g_UartRxFlag.index = 0;
-          }
-        }
-   }
-   break;
-   }
-     
-  }        
+  }
 }
 
 /**
