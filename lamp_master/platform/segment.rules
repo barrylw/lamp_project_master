@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # segment.rules - platform
 
 # segment.rules file for platform code
@@ -11,3 +12,18 @@ HOME contiki-main.c
 HOME button-sensor.c
 
 # segment.rules - platform - end
+=======
+# segment.rules - platform
+
+# segment.rules file for platform code
+# Please see cpu/cc2430/segment.rules for more info on code segments
+# and for rules of thumb on what to do and what not to do
+
+# Keep main() in HOME
+HOME contiki-main.c
+
+# Files with ISRs must be in HOME
+HOME button-sensor.c
+
+# segment.rules - platform - end
+>>>>>>> 1c8a365a388f3826ae65a4404b1caaf07e71bb24

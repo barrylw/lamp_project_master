@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 -bad
 -br
 -brs
@@ -20,3 +21,27 @@
 -nsc
 -nut
 -psl
+=======
+-bad
+-br
+-brs
+-cdw
+-ce
+-hnl
+-i2
+-lp
+-nbap
+-nbbb
+-ncdb
+-ncs
+-nfca
+-nlps
+-npcs
+-nprs
+-nsaf
+-nsai
+-nsaw
+-nsc
+-nut
+-psl
+>>>>>>> 1c8a365a388f3826ae65a4404b1caaf07e71bb24
