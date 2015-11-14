@@ -1,0 +1,23 @@
+<<<<<<< HEAD
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\MasterNode.ewp</path>
+  </project>
+  <batchBuild/>
+</workspace>
+
+
+=======
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\MasterNode.ewp</path>
+  </project>
+  <batchBuild/>
+</workspace>
+
+
+>>>>>>> 1c8a365a388f3826ae65a4404b1caaf07e71bb24

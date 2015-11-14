@@ -1,0 +1,31 @@
+<<<<<<< HEAD
+KEYBOARD_SHORTCUTS = \
+<b>Keyboard shortcuts</b><br>\
+<br><i>Ctrl+N:</i> New simulation\
+<br><i>Ctrl+S:</i> Start/pause simulation\
+<br><i>Ctrl+R:</i> Reload current simulation. If no simulation exists, the last used simulation config is loaded\
+<br><i>Ctrl+Shift+R:</i> Reload current simulation with another random seed\
+<br>\
+<br><i>F1:</i> Toggle quick help
+
+GETTING_STARTED = \
+<b>Getting started</b><br>\
+<br>\
+<br><i>F1:</i> Toggle quick help</i>
+
+=======
+KEYBOARD_SHORTCUTS = \
+<b>Keyboard shortcuts</b><br>\
+<br><i>Ctrl+N:</i> New simulation\
+<br><i>Ctrl+S:</i> Start/pause simulation\
+<br><i>Ctrl+R:</i> Reload current simulation. If no simulation exists, the last used simulation config is loaded\
+<br><i>Ctrl+Shift+R:</i> Reload current simulation with another random seed\
+<br>\
+<br><i>F1:</i> Toggle quick help
+
+GETTING_STARTED = \
+<b>Getting started</b><br>\
+<br>\
+<br><i>F1:</i> Toggle quick help</i>
+
+>>>>>>> 1c8a365a388f3826ae65a4404b1caaf07e71bb24
