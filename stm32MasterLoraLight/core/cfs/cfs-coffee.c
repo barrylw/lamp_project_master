@@ -165,7 +165,7 @@ struct sector_status {
 
 /* The structure of cached file objects. */
 struct file {
-  cfs_offset_t end;        //存放文件的最后一个字节的偏移量
+  cfs_offset_t end;        //存放文件的最后一个字节的偏移量(相当于文件长度)
   coffee_page_t page;      //指向物理文件的第一页，即存放文件元数据file_header的页
   coffee_page_t max_pages; //max_pages含义跟file_header->max_pages相同，即为该文件保留的页面数
   int16_t record_count;    //record_count表示实际的微日志记录数量，不同于file_header的log_records。
@@ -188,7 +188,7 @@ struct file {
 
 /* The file descriptor structure. */
 struct file_desc {
-  cfs_offset_t offset; //此处offset意思不清楚，需分析代码，是否与file中end变量意思一样:offset不是文件长度，而是在文件中的位置，偏移量
+  cfs_offset_t offset; //offset不是文件长度，而是在文件中的位置，偏移量(类似于指针，指向现在操作的位置)
   struct file *file;
   uint8_t flags;       //存储文件访问权限，系统定义了四个值：COFFEE_FD_FREE、COFFEE_FD_READ、FFEE_FD_WRITE、COFFEE_FD_APPEND
 #if COFFEE_IO_SEMANTICS
@@ -223,7 +223,7 @@ struct log_param {
  * protected if checkpointing is not used.
  */
 static struct protected_mem_t {
-  struct file coffee_files[COFFEE_MAX_OPEN_FILES];
+  struct file coffee_files[COFFEE_MAX_OPEN_FILES];          //内存中保存的打开的文件信息
   struct file_desc coffee_fd_set[COFFEE_FD_SET_SIZE];
   coffee_page_t next_free;                                  //指向下一个空闲的coffee页
   char gc_wait;
@@ -1139,6 +1139,12 @@ cfs_close(int fd)
   }
 }
 /*---------------------------------------------------------------------------*/
+/*表示以何种方式修改指针偏移量
+CFS_SEEK_SET  表示偏移量修改为文件开始位置+offset
+CFS_SEEK_END  表示偏移量修改为文件结束位置+offset
+CFS_SEEK_CUR  表示偏移量修改为文件当前位置+offset
+*/
+
 cfs_offset_t
 cfs_seek(int fd, cfs_offset_t offset, int whence)
 {

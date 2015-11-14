@@ -47,7 +47,7 @@
 
 #include "contiki-conf.h"
 
-#include "hal_flash.h"
+//#include "hal_flash.h"
 //#include "hal/error.h"
 //#include "hal/micro/cortexm3/flash.h"
 
@@ -57,25 +57,36 @@
  * unit is an aligned 16-bit half-word.
  */
 /* Byte page size, starting address on page boundary, and size of file system */
+#if 0
 #define FLASH_START               0x8000000
 /* Minimum erasable unit. */
-//#define FLASH_PAGE_SIZE           1024
+#define FLASH_PAGE_SIZE           1024
 /* Last 3 pages reserved for NVM. */
 #define FLASH_PAGES               61
+#endif
+
+#define FLASH_START               0
+#define FLASH_PAGE_SIZE           64
+#define FLASH_PAGES               512  //(32*1024/64)
 
 /* Minimum reservation unit for Coffee. It can be changed by the user.  */
-#define COFFEE_PAGE_SIZE          (FLASH_PAGE_SIZE/4)
-
+//#define COFFEE_PAGE_SIZE          (FLASH_PAGE_SIZE/4)
+#define COFFEE_PAGE_SIZE          FLASH_PAGE_SIZE
 /*
  * If using IAR, COFFEE_ADDRESS reflects the static value in the linker script
  * iar-cfg-coffee.icf, so it can't be passed as a parameter for Make.
  */
+
+#if 0
 #ifdef __ICCARM__
-#define COFFEE_ADDRESS            0x800B000
+#define COFFEE_ADDRESS            0x800B000  //表示COFFEE文件系统在flash中的初始位置
 #endif
-#if (COFFEE_ADDRESS & 0x3FF) != 0
+#if (COFFEE_ADDRESS & 0x3FF) != 0            //表示COFFEE文件系统要1024字节对齐   
 #error "COFFEE_ADDRESS not aligned to a 1024-bytes page boundary."
 #endif
+#endif
+
+#define COFFEE_ADDRESS            0 
 
 #define COFFEE_PAGES              ((FLASH_PAGES*FLASH_PAGE_SIZE-               \
                  (COFFEE_ADDRESS-FLASH_START))/COFFEE_PAGE_SIZE)
@@ -97,7 +108,7 @@
  /* #define FLASH_COMPLEMENT_DATA     0 */
 
 /* These are used internally by the coffee file system */
-#define COFFEE_MAX_OPEN_FILES     4
+#define COFFEE_MAX_OPEN_FILES     4    /* 在内存中保留信息的文件数量 */
 #define COFFEE_FD_SET_SIZE        8
 #define COFFEE_DYN_SIZE           (COFFEE_PAGE_SIZE*1)
 /* Micro logs are not needed for single page sectors */
@@ -105,14 +116,27 @@
 #define COFFEE_LOG_TABLE_LIMIT    16    /* It doesnt' matter as */
 #define COFFEE_LOG_SIZE           128   /* COFFEE_MICRO_LOGS is 0. */
 
+
+/***************************************************
+把INVALID_PAGE定义为coffee_page_t-1，
+如果coffee_page_t是8位，那么INVALID_PAGE为0xFF，
+如果coffee_page_t是16位，那么INVALID_PAGE为0xFFFF，
+可以自适应coffee_page_t类型的变化，更具移植性。
+***************************************************/
 #if COFFEE_PAGES <= 127
 #define coffee_page_t int8_t
 #elif COFFEE_PAGES <= 0x7FFF
 #define coffee_page_t int16_t
 #endif
 
+#if 0
 #define MFB_BOTTOM          (0x08000000u)
 #define MFB_SIZE_B          (0x10000)          
+#define MFB_TOP             (MFB_BOTTOM+MFB_SIZE_B-1)
+#endif
+
+#define MFB_BOTTOM          0
+#define MFB_SIZE_B          (0x8000)          
 #define MFB_TOP             (MFB_BOTTOM+MFB_SIZE_B-1)
 
 #define COFFEE_WRITE(buf, size, offset) \

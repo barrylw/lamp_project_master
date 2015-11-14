@@ -31,4 +31,5 @@ void read_memory_code(u16 addr, u8 *buf, u16 length);
 void write_memory_code(u16 addr, u8 *buf, u16 length);
 void read_device_ID(u8 *buf);
 void fast_read_memory_code(u16 addr, u8 *buf, u16 length);
+void write_memory_const_value(u16 addr, u8 value, u16 length);
 #endif

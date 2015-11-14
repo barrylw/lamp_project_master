@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=833039492
+Checksum=-1362603239
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -102,10 +102,7 @@ Exclusions=
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\APP\NWK.c}.403.7" 0 0 1 "" 0 "" 0
-Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\APP\Sys.c}.23.3" 0 0 1 "" 0 "" 0
-Bp2=_ 1 "EMUL_CODE" "{$PROJ_DIR$\APP\hal_radio.c}.148.17" 0 0 1 "" 0 "" 0
-Count=3
+Count=0
 [Aliases]
 A0=_ "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\CMSIS\Include\core_cm3.h" ""
 A1=_ "C:\Program Files\IAR Systems\Embedded Workbench 6.5\arm\CMSIS\Include\core_cm3.h" ""

@@ -46,13 +46,4 @@ void Comm_Init(FunctionalState dogstate,u8 dogtime);
 void Comm_Proc();
 
 
-void * w_memcpy( void *out, const void *in, unsigned int n);
-void *w_memset(void *out, int value, unsigned int n);
-
-#define memcpy(dest, src, count)   w_memcpy(dest, src, count)
-#define memset(dest, value, count) w_memset(dest, value, count)
-
-
-
-
 #endif

@@ -1028,6 +1028,7 @@ void SX1276LoRa_Receive_Packet(bool singleRx);
 void SX1276LoRa_Send_Packet(u8 *PBuffer,u8 length);
 void SX1276_lora_init(bool);
 void RxEndProcess(bool dataValid);
+uint8_t SX1276LoRaGetRFState( void );
 /* END:   Added by Barry, 2014/3/4 */
 #endif //__SX1276_LORA_H__
 

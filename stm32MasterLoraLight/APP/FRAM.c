@@ -148,6 +148,26 @@ void write_memory_code(u16 addr, u8 *buf, u16 length)
    
 }
 
+void write_memory_const_value(u16 addr, u8 value, u16 length)
+{
+   if ((read_status_reg() & 0x02) == 0)
+   {
+      set_write_enable_latch();
+   }
+   
+   FRAM_CS_LOW();
+   FRAMReadWriteByte(0x02);
+   FRAMReadWriteByte((u8)(addr/256));
+   FRAMReadWriteByte((u8)(addr%256));
+   for (u16 i = 0; i < length; i++)
+   {
+       FRAMReadWriteByte(value);
+   }
+   FRAM_CS_HIGH(); 
+   
+   reset_write_enable_latch();
+}
+
 void read_device_ID(u8 *buf)
 {
   FRAM_CS_LOW();

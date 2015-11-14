@@ -1,0 +1,2 @@
+---- lseek Matches (1 in 1 files) ----
+Cfs-posix.c (core\cfs):  return lseek(f, o, w);

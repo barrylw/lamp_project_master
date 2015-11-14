@@ -67,7 +67,9 @@
 #include "lib/crc16.h"
 #include "lib/random.h"
 #include <stdio.h>
-#include "common.h"
+//#include "common.h"
+#include "Mem.h"
+#include "FRAM.h"
   
 #define FAIL(x) PRINTF("FAILED\n");error = (x); goto end;
 
@@ -465,32 +467,49 @@ end:
 /*--------------------------------------------------------------------------*/
 void stm32f0_flash_read(uint32_t address,  void *data, uint32_t length)
 {
+  /*
   uint8_t *pdata = (uint8_t *) address;
 
   ENERGEST_ON(ENERGEST_TYPE_FLASH_READ);
   memcpy(data, pdata, length);
   ENERGEST_OFF(ENERGEST_TYPE_FLASH_READ);
+  */
+
+   read_memory_code((uint16_t)address, data, length);
 }
 /*--------------------------------------------------------------------------*/
+//将一个flash sector全部写0
 void stm32f0_flash_erase(uint8_t sector)
 {
   /* halInternalFlashErase(MFB_PAGE_ERASE, COFFEE_START + 
               (sector) * COFFEE_SECTOR_SIZE); */
+
+  #if 0
   uint16_t data = 0;
   uint32_t addr = COFFEE_START + (sector) * COFFEE_SECTOR_SIZE;
   uint32_t end = addr + COFFEE_SECTOR_SIZE;
+  #endif
+
+  uint16_t addr = COFFEE_START + (sector) * COFFEE_SECTOR_SIZE;
+  uint16_t end = addr + COFFEE_SECTOR_SIZE;
 
   /* This prevents from accidental write to CIB. */
   if(!(addr >= MFB_BOTTOM && end <= MFB_TOP + 1)) {
     return;
   }
-  
+
+  write_memory_const_value(addr, 0, COFFEE_SECTOR_SIZE);
+
+  #if 0
   FLASH_ErasePage( addr );
   
   for(; addr < end; addr += 4) 
   {
     FLASH_ProgramWord( addr, data);
   }
+  #endif
+
+  
   
 #if 0
   for(; addr < end; addr += 2) {
@@ -501,16 +520,18 @@ void stm32f0_flash_erase(uint8_t sector)
 /*--------------------------------------------------------------------------*/
 /* 
  * Allocates a buffer of FLASH_PAGE_SIZE bytes statically (rather than on
- * the stack).
+ * the stack). 意思为最好分配一个静态的数组，这样比在栈中分配好
  */
-/*
+#if 0
 #ifndef STATIC_FLASH_BUFFER
 #define STATIC_FLASH_BUFFER       1
 #endif
-*/
-
+#endif
 void stm32f0_flash_write(uint32_t address, const void *data, uint32_t length)
-{
+{ 
+
+   write_memory_code((uint16_t)address, (uint8_t *)data, (uint16_t)length);
+#if 0
   const uint32_t end = address + length;
   uint32_t i;
   uint32_t next_page, curr_page;
@@ -550,13 +571,14 @@ void stm32f0_flash_write(uint32_t address, const void *data, uint32_t length)
     data = (uint8_t *) data + next_page - i;
     i = next_page;
   }
+  #endif
 }
 
 void stm32_flash_erase(void)
 {
-  u32_t curr_page_addr = COFFEE_START &~(FLASH_PAGE_SIZE - 1);
-  u32_t last_page_addr = (COFFEE_START + COFFEE_SIZE - FLASH_PAGE_SIZE) &~(FLASH_PAGE_SIZE - 1); //用于Coffee最后一页的起始地址
-  u32_t i;
+  uint32_t curr_page_addr = COFFEE_START &~(FLASH_PAGE_SIZE - 1);
+  uint32_t last_page_addr = (COFFEE_START + COFFEE_SIZE - FLASH_PAGE_SIZE) &~(FLASH_PAGE_SIZE - 1); //用于Coffee最后一页的起始地址
+  uint32_t i;
 
   FLASH_Unlock(); /* Unlock the Flash Program Erase controller */
   for(i = curr_page_addr; i <= last_page_addr;)

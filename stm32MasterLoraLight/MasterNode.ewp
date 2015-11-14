@@ -371,7 +371,7 @@
         </option>
         <option>
           <name>IccAllowVLA</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccCppDialect</name>
@@ -1987,6 +1987,15 @@
   </group>
   <group>
     <name>contiki</name>
+    <group>
+      <name>coffee</name>
+      <file>
+        <name>$PROJ_DIR$\coffee_arch\cfs-coffee-arch.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\core\cfs\cfs-coffee.c</name>
+      </file>
+    </group>
     <group>
       <name>lib</name>
       <file>
