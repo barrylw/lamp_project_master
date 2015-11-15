@@ -34,7 +34,7 @@ void Comm_Init(FunctionalState dogstate,u8 dogtime)
   //Time_Init();
   //IFlash_Init();
 
-  Timer_Init(TIM5);
+  //Timer_Init(TIM5);
   //Timer_Start(TIM5);
 
   LED_Init(RX_LED);
@@ -68,7 +68,26 @@ void Comm_Proc()
 /************* º¯ÊıÉùÃ÷ *************/
 
 
+void * w_memcpy( void *out, const void *in, size_t n)
+{
+  uint8_t *src, *dest;
+  src = (uint8_t *) in;
+  dest = (uint8_t *) out;
+  while(n-- > 0) {
+    *dest++ = *src++;
+  }
+  return out;
+}
 
+void *w_memset(void *out, int value, size_t n)
+{
+  uint8_t *dest;
+  dest = (uint8_t *) out;
+  while(n-- > 0) {
+    *dest++ = value & 0xff;
+  }
+  return out;
+}
 
 
 

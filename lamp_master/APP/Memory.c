@@ -180,7 +180,7 @@ void *OSMemGet (OS_MEM *pmem, u8 *perr)
 {
   void *pblk;
 
-#if OS_CRITICAL_METHOD == 3u                      /* Allocate storage for CPU status register      */
+#if OS_CRITICAL_METHOD == 3u                          /* Allocate storage for CPU status register      */
   OS_CPU_SR cpu_sr = 0u;
 #endif
   
@@ -212,7 +212,7 @@ void *OSMemGet (OS_MEM *pmem, u8 *perr)
   OS_EXIT_CRITICAL();
   
   *perr = OS_ERR_MEM_NO_FREE_BLKS;                /* No,  Notify caller of empty memory partition  */
-  return ((void *)0);                             /*      Return NULL pointer to caller            */
+  return ((void *)0);                               /*      Return NULL pointer to caller            */
 }
 
 /**
@@ -233,19 +233,19 @@ u8 OSMemPut (OS_MEM *pmem, void *pblk)
 #endif
   
 #if OS_ARG_CHK_EN > 0u
-  if (pmem == (OS_MEM *)0)                      /* Must point to a valid memory partition             */
+  if (pmem == (OS_MEM *)0)                    /* Must point to a valid memory partition             */
   {
     return (OS_ERR_MEM_INVALID_PMEM);
   }
   
-  if (pblk == (void *)0)                       /* Must release a valid block                         */
+  if (pblk == (void *)0)                      /* Must release a valid block                         */
   {
     return (OS_ERR_MEM_INVALID_PBLK);
   }
 #endif
 
   OS_ENTER_CRITICAL();
-  if (pmem->OSMemNFree >= pmem->OSMemNBlks)    /* Make sure all blocks not already returned          */
+  if (pmem->OSMemNFree >= pmem->OSMemNBlks)   /* Make sure all blocks not already returned          */
   {
     OS_EXIT_CRITICAL();
     return (OS_ERR_MEM_FULL);

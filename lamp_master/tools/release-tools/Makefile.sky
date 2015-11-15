@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 contiki-collect-sky:
 	(cd contiki-2.x/tools/collect-view/; ant dist && chmod 755 dist/tools/*-linux)
 	cp -r contiki-2.x/tools/collect-view/dist contiki-collect-sky-$(RELEASE)
@@ -8,14 +7,3 @@ contiki-collect-sky-$(RELEASE).zip: contiki-collect-sky
 	chmod 644 contiki-collect-sky-$(RELEASE).zip
 
 BINARIES += contiki-collect-sky-$(RELEASE).zip
-=======
-contiki-collect-sky:
-	(cd contiki-2.x/tools/collect-view/; ant dist && chmod 755 dist/tools/*-linux)
-	cp -r contiki-2.x/tools/collect-view/dist contiki-collect-sky-$(RELEASE)
-
-contiki-collect-sky-$(RELEASE).zip: contiki-collect-sky
-	zip -r contiki-collect-sky-$(RELEASE).zip contiki-collect-sky-$(RELEASE)
-	chmod 644 contiki-collect-sky-$(RELEASE).zip
-
-BINARIES += contiki-collect-sky-$(RELEASE).zip
->>>>>>> 1c8a365a388f3826ae65a4404b1caaf07e71bb24

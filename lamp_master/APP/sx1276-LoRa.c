@@ -241,7 +241,7 @@ tLoRaSettings LoRaSettings =
     true,                                   // CrcOn [0: OFF, 1: ON]
     false,                                  // ImplicitHeaderOn [0: OFF, 1: ON]
     false,                                  // RxSingleOn [0: Continuous, 1 Single]
-    true,                                   // FreqHopOn [0: OFF, 1: ON]
+    false,                                   // FreqHopOn [0: OFF, 1: ON]
     7,                                      // HopPeriod Hops every frequency hopping period symbols
     800,                                    // TxPacketTimeout
     800,                                    // RxPacketTimeout
@@ -812,8 +812,8 @@ void SX1276LoRaInit( void )
     }
     
     /* BEGIN: Added by Barry, 2014/3/5 */
-    SX1276LoRaSetPAOutput( RFLR_PACONFIG_PASELECT_RFO );
-    //SX1276LoRaSetPAOutput( RFLR_PACONFIG_PASELECT_PABOOST );
+    //SX1276LoRaSetPAOutput( RFLR_PACONFIG_PASELECT_RFO );
+    SX1276LoRaSetPAOutput( RFLR_PACONFIG_PASELECT_PABOOST );
     /* set max power 17DBm */
     SX1276LoRaSetPa20dBm( false );
     

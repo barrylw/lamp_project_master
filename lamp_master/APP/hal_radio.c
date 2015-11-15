@@ -71,7 +71,6 @@ static u16 rxCount = 0;
 extern u8 tedtbuf[];
 struct etimer timer_rf; 
 
-#define RF_RESET_TIME_S       600 //10min
 /*****************************************************************************
  Prototype    : hal_RunRFEvents
  Description  : brief  Handle Radio events in main loop.
@@ -106,7 +105,7 @@ PROCESS_THREAD(hal_RF_process, ev, data)
         else  if (*((tRFLRStates*)data) == RFLR_STATE_RX_RECEIVEING) 
         {
            etimer_set(&timer_rf, CLOCK_CONF_SECOND*2);
-           //printf("rx start\r\n");
+           printf("rx start\r\n");
         } 
         else if (*((tRFLRStates*)data) == RFLR_STATE_RX_RUNNING) 
         {
@@ -114,21 +113,42 @@ PROCESS_THREAD(hal_RF_process, ev, data)
           {
               g_RF_LoRa.rf_DataBufferValid = false;
               
-              LED_On(TX_LED);
+              rxCount++;
               
-              Delayms(100);
-         
-              hal_UartDMATx(COM1, g_RF_LoRa.rf_DataBuffer, g_RF_LoRa.rf_RxPacketSize);
-        
               printf("rssi = %f\r\n", SX1276LoRaGetPacketRssi());
               printf("snr = %d\r\n",SX1276LoRaGetPacketSnr());
-         
+              
+            #if 0
+              memset(oledPrintf,0,sizeof(oledPrintf));
+              sprintf(oledPrintf,"rssi = %f",SX1276LoRaGetPacketRssi());
+              OLED_ShowString(0,0,oledPrintf);
+              memset(oledPrintf,0,sizeof(oledPrintf));
+              sprintf(oledPrintf,"tx%d,rx%d",txcount, rxCount);
+              OLED_ShowString(0,2,oledPrintf);
+              Delayms(10);
+            #endif
+              
+              printf("%x %x %x %x ", txcount/256, txcount%256, rxCount/256, rxCount%256);
+              
               for (u8 i = 0; i < g_RF_LoRa.rf_RxPacketSize; i++ )
               {
                 printf("%x ",g_RF_LoRa.rf_DataBuffer[i] );
               }
               
               printf("\r\n");
+
+              if (g_slaveMode)
+              {
+                tedtbuf[0] = (u8)(rxCount>>8);
+                tedtbuf[1] = (u8)(rxCount & 0xFF);
+
+                #ifndef USE_LORA_MODE
+                SX1276Fsk_Send_Packet(tedtbuf, g_RF_LoRa.rf_RxPacketSize);
+                #else
+                SX1276LoRa_Send_Packet(tedtbuf, g_RF_LoRa.rf_RxPacketSize);
+                #endif
+              }
+          }
         }
     }
     else if (ev == PROCESS_EVENT_TIMER)
@@ -147,9 +167,8 @@ PROCESS_THREAD(hal_RF_process, ev, data)
          SX1276LoRa_Receive_Packet(false);
        }
     }
-  }
  }
-  PROCESS_END();
+ PROCESS_END();
 }
 #else
   
@@ -179,7 +198,6 @@ PROCESS_THREAD(hal_RF_process, ev, data)
         }
         else if (*((tRFStates*)data) == RF_STATE_RX_DONE) 
         {
-          #if 0
            printf("rx done\r\n");
            printf("rssi = %f\r\n",g_fsk.rssi);
            for (u8 i = 0; i < g_fsk.packetLenth; i++ )
@@ -187,9 +205,6 @@ PROCESS_THREAD(hal_RF_process, ev, data)
               printf("%d ",g_fsk.buffer[i]);
            }
            printf("\r\n");
-          #endif
-         
-           hal_UartDMATx(COM1, g_fsk.buffer,g_fsk.packetLenth);
            SX1276Fsk_recrive_Packet();
         }
     }
@@ -214,44 +229,6 @@ PROCESS_THREAD(hal_RF_process, ev, data)
  PROCESS_END();
 }
 #endif
-
-struct etimer timer_RFreset;
-PROCESS(hal_RF_reset, "radio_reset");
-PROCESS_THREAD(hal_RF_reset, ev, data)
-{
-  PROCESS_BEGIN();
-
-  while(1)
-  {
-    etimer_set(&timer_RFreset, CLOCK_CONF_SECOND*RF_RESET_TIME_S);
-    
-    PROCESS_WAIT_EVENT_UNTIL((ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &timer_RFreset));
-    
-    while (1)
-    {
-     
-     #ifdef USE_LORA_MODE   // RF free
-     if ((SX1276LoRaGetRFState() != RFLR_STATE_TX_RUNNING) &&  (SX1276LoRaGetRFState() != RFLR_STATE_RX_RECEIVEING))
-    #else
-      if ((g_fsk.states != RF_STATE_TX_RUNNING) && (g_fsk.states != RF_STATE_RX_PREAMBLE) && (g_fsk.states != RF_STATE_RX_SYNC) && (g_fsk.states != RF_STATE_RX_RUNNING)) 
-    #endif
-      {
-          hal_InitRF();
-           break;
-      }
-      else                // RF not free
-      {
-         printf("RF busy\r\n");
-         process_poll(&hal_RF_reset);
-         PROCESS_WAIT_EVENT(); 
-      }
-    }
-  }
-  PROCESS_END();
-}
-
-
-
 
 struct etimer test_send_timer; 
 PROCESS(hal_long_send, "long_send_process ");
@@ -298,7 +275,6 @@ PROCESS_THREAD(hal_long_send, ev, data)
   }
   PROCESS_END();
 }
-
 
 /*****************************************************************************
  Prototype    : spiReadWriteByte

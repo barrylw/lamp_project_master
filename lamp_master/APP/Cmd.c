@@ -6,9 +6,7 @@
 *——————————————————————————*/
 #include "Cmd.h"
 #include "hal_radio.h"
-#include "sx1276-LoRa.h"
 
-extern u8 tedtbuf[150];
 extern u16 resettime;//系统复位次数
 extern ST_UART_FLAG g_DebugRxFlag;
 extern u8 g_DebugRxBuffer[RBL_COM2_RX_SIZE];
@@ -46,7 +44,6 @@ sCmd CmdList[] =
   {"ver",Version,"版本信息"},
   {"ls",ListCmd,"打印列表"},
   {"readft",read_reg_all},
-  {"tx",send_packet},
   //{"su",SendUart,"主串口发送{长度}"},
 
   //{"rid", ReadFlashID, "读取FLASH ID"},
@@ -815,15 +812,4 @@ void read_reg_all(void)
     printf("%x  ", tempValue);
   }
   printf("\r\n");
-}
-
-void send_packet(void)
-{
-  u8 length;
-  GetU8Para(&length, 1);
-  #ifndef USE_LORA_MODE
-  SX1276Fsk_Send_Packet(tedtbuf, length); 
-#else
-  SX1276LoRa_Send_Packet(tedtbuf, length);
-  #endif
 }

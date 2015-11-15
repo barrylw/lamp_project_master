@@ -14,7 +14,6 @@
 #include "Uart.h"
 #include "Cmd.h"
 #include "MCP.h"
-#include "Led.h"
 #include "sx1276-LoRa.h"
 /** @addtogroup USART
   * @{
@@ -87,7 +86,7 @@ void hal_RunUartEvents(ST_EVENT_METHOD *pEvents)
         switch (eventCnt)
         {
           case 0://PrintEvent
-          { 
+          {
             hal_InitCOM(DEBUG_COM);
             PrintEvent.timeToExecute = GetSysTime() + PRINT_TOTAL_TIMEOUT;
             hal_UartDMATx(COM2, PRINT_TIMEOUT_ERROR, StrLen(PRINT_TIMEOUT_ERROR));
@@ -103,12 +102,11 @@ void hal_RunUartEvents(ST_EVENT_METHOD *pEvents)
           }
           case 3://UartRxEvent
           {
-            hal_InitCOM(COM1);
-            LED_Off(RX_LED);
             g_UartRxFlag.index = 0;
-            UartRxEvent.startoption = END;
-            apl_ProcessUartCmd();
-          
+            hal_InitCOM(COM1);
+            //hal_BlindLED(RXD_LED);
+            PrintEvent.timeToExecute = GetSysTime() + PRINT_TOTAL_TIMEOUT;
+            hal_UartDMATx(COM2, UART_RXD_TIMEOUT_ERROR, StrLen(UART_RXD_TIMEOUT_ERROR));
             break;
           }
           default:
@@ -116,10 +114,10 @@ void hal_RunUartEvents(ST_EVENT_METHOD *pEvents)
             break;
           }
         }
-     }
-   }
-   else if (pEvents[eventCnt].control->startoption == FINISH)
-   {
+      }
+    }
+    else if (pEvents[eventCnt].control->startoption == FINISH)
+    {
       pEvents[eventCnt].control->startoption = END;
       switch (eventCnt)
       {
@@ -138,9 +136,9 @@ void hal_RunUartEvents(ST_EVENT_METHOD *pEvents)
           break;
         }
       }
-   }
- }//end of for
-}//end of function
+    }
+  }
+}
 
 /**
   * @brief  Initialize UART global variable
@@ -447,13 +445,20 @@ u8 GetChecksum(u8 *pbuffer, u16 length)
   */
 void apl_ProcessUartCmd(void)
 {
-  //DISP(printf("HAL:Uart Receive Packet:\r\n"););
-  
-    #ifndef USE_LORA_MODE
-        SX1276Fsk_Send_Packet(g_UartRxBuffer, g_UartRxFlag.fLen);
-      #else
-        SX1276LoRa_Send_Packet(g_UartRxBuffer, g_UartRxFlag.fLen);
-      #endif
+  DISP(printf("HAL:Uart Receive Packet:\r\n"););
+
+  #if 0
+  PrintBuff(g_UartRxBuffer,g_UartRxFlag.fLen);
+
+  MCP_Process(g_UartRxBuffer,g_UartRxFlag.fLen);
+  #endif
+
+  if (GetChecksum(g_UartRxBuffer, g_UartRxFlag.fLen - 2) == g_UartRxBuffer[g_UartRxFlag.fLen - 2])
+  {
+    SX1276LoRa_Send_Packet(g_UartRxBuffer,g_UartRxFlag.fLen);
+  }
+
+
   
 }
 
@@ -474,8 +479,6 @@ void RBL_COM1_TX_IRQHandler(void)
     DMA_ClearITPendingBit(RBL_COM1_TX_DMA_COMPLETE);
 
     UartTxEvent.startoption = END;
-    
-    LED_Off(TX_LED);
   }
 
   if (DMA_GetITStatus(RBL_COM1_TX_DMA_ERROR) != RESET)
@@ -500,12 +503,109 @@ void RBL_COM1_RX_IRQHandler(void)
     g_UartRxBuffer[g_UartRxFlag.index] = USART_ReceiveData(RBL_COM1);
 
     UartRxEvent.startoption = WAIT;
-    UartRxEvent.timeToExecute = GetSysTime() + 100;
+    UartRxEvent.timeToExecute = GetSysTime() + (u32)UART_BAUD_COFF + 100;
+
+
     
-    g_UartRxFlag.index++;
-    g_UartRxFlag.fLen = g_UartRxFlag.index;
-   
-    LED_On(RX_LED);
+    #if 0
+    switch (g_UartRxFlag.index)
+    {
+      case 0:
+    {
+      if(g_UartRxBuffer[g_UartRxFlag.index] != MCP_FSTART_1)
+      {
+        g_UartRxFlag.index = 0;
+      }
+      else
+      {
+        g_UartRxFlag.index++;
+      }
+    }
+        break;
+      case 1:
+      {
+        if((g_UartRxBuffer[g_UartRxFlag.index] == MCP_FSTART_2) && (g_UartRxBuffer[0] == MCP_FSTART_1))
+        {
+            g_UartRxFlag.index++;
+        }
+        else
+        {
+      g_UartRxFlag.index = 0;          
+        }
+        break;
+      }      
+      case 2:
+      case 3:
+      case 4:      
+      {
+        g_UartRxFlag.index++;
+        break;
+      }
+      default:
+      {
+        if (g_UartRxFlag.index >= g_UartRxBuffer[4] + 7)
+        {
+          if (g_UartRxBuffer[g_UartRxFlag.index] == MCP_FEND)
+          {
+            UartRxEvent.startoption = FINISH;
+            g_UartRxFlag.fLen = g_UartRxFlag.index + 1;
+          }
+          g_UartRxFlag.index = 0;
+        }
+        else
+        {
+          g_UartRxFlag.index++;
+        }
+        break;
+      }
+    }
+    #endif
+
+    switch (g_UartRxFlag.index)
+    {
+      case 0:
+      case 7:
+      {
+        if(g_UartRxBuffer[g_UartRxFlag.index] != 0x68)
+        {
+          g_UartRxFlag.index = 0;
+        }
+        else
+        {
+          g_UartRxFlag.index++;
+        }
+        break;
+      }
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 8:
+      case 9:
+      {
+        g_UartRxFlag.index++;
+        break;
+      }
+      default:
+      {
+        if (g_UartRxFlag.index >= g_UartRxBuffer[9] + 11)
+        {
+          if (g_UartRxBuffer[g_UartRxFlag.index] == 0x16)
+          {
+            UartRxEvent.startoption = FINISH;
+            g_UartRxFlag.fLen = g_UartRxFlag.index + 1;
+          }
+          g_UartRxFlag.index = 0;
+        }
+        else
+        {
+          g_UartRxFlag.index++;
+        }
+        break;
+      }
+    }
   }
 }
 

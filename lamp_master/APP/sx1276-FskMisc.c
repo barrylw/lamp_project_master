@@ -463,7 +463,7 @@ int8_t SX1276FskGetRawTemp( void )
 {
     int8_t temp = 0;
     uint8_t previousOpMode;
-    //uint32_t startTick;
+    uint32_t startTick;
     
     // Enable Temperature reading
     SX1276Read( REG_IMAGECAL, &SX1276->RegImageCal );

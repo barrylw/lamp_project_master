@@ -18,7 +18,7 @@
 #include "Basedefine.h"
 #include "Event.h"
 #include "Memory.h"
-#include "process.h"
+#include "sys/process.h"
 /** @addtogroup Low Level Uart Driver
   * @{
   */
@@ -48,7 +48,7 @@
  * @brief Definition for COM1, connected to UART4
  */ 
 #define RBL_COM1                         UART4
-#define RBL_COM1_BAUD                    9600
+#define RBL_COM1_BAUD                    115200
 #define RBL_COM1_CLK                     RCC_APB1Periph_UART4
 #define RBL_COM1_TX_PIN                  GPIO_Pin_10
 #define RBL_COM1_TX_GPIO_PORT            GPIOC

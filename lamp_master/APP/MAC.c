@@ -259,7 +259,7 @@ void Mac_CCA_Proc(void)
     MacRecv.mac_recv_data_ready = 0;
     
     //读取接收到的数据
-    //Phy_GetData(&MacRecv.mac_recv_buf_len,MacRecv.mac_recv_buf,&MacRecv.mac_recv_rssi);
+    Phy_GetData(&MacRecv.mac_recv_buf_len,MacRecv.mac_recv_buf,&MacRecv.mac_recv_rssi);
     
     if(0 == MacRecv.mac_recv_buf_len)
     {

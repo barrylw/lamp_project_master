@@ -141,7 +141,7 @@ typedef enum
 /* Exported functions ------------------------------------------------------- */
 void hal_RunRFEvents(ST_EVENT_METHOD *pEvents);
 void hal_InitRFVariable(void);
-void hal_InitRF(void);
+//void hal_InitRF(void);
 void hal_sRF_InitSPI(void);
 void hal_sRF_ITConfig(uint32_t irqLine, FunctionalState NewState);
 u8 hal_sRF_ReadRegister(u8 reg);
@@ -196,7 +196,5 @@ void hal_sRF_FSK_ITConfig( uint32_t irqLine, FunctionalState NewState);
 
 PROCESS_NAME(hal_RF_process);
 PROCESS_NAME(hal_long_send);
-PROCESS_NAME(hal_RF_reset);
-
 
 /******************* (C) COPYRIGHT 2013 Robulink Technology Ltd.*****END OF FILE****/

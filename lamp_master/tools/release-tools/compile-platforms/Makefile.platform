@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 all: print-version hello-world
 CONTIKI = ../../../..
 APPS=serial-shell webserver telnetd
@@ -10,16 +9,3 @@ endif
 include $(CONTIKI)/Makefile.include
 print-version:
 	@$(CC) --version || echo
-=======
-all: print-version hello-world
-CONTIKI = ../../../..
-APPS=serial-shell webserver telnetd
-
-ifeq ($(TARGET), avr-raven)
-  UIP_CONF_IPV6=1
-endif
-
-include $(CONTIKI)/Makefile.include
-print-version:
-	@$(CC) --version || echo
->>>>>>> 1c8a365a388f3826ae65a4404b1caaf07e71bb24

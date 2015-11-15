@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/bin/sh
 f=`basename $1`
 mkdir /tmp/$$
@@ -8,14 +7,3 @@ export INDENT_PROFILE=`dirname $0`/indent.pro
 indent /tmp/$$/$f
 diff /tmp/$$/$f.orig /tmp/$$/$f
 rm -rf /tmp/$$
-=======
-#!/bin/sh
-f=`basename $1`
-mkdir /tmp/$$
-cp $1 /tmp/$$/
-cp $1 /tmp/$$/$f.orig
-export INDENT_PROFILE=`dirname $0`/indent.pro
-indent /tmp/$$/$f
-diff /tmp/$$/$f.orig /tmp/$$/$f
-rm -rf /tmp/$$
->>>>>>> 1c8a365a388f3826ae65a4404b1caaf07e71bb24

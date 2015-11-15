@@ -51,6 +51,6 @@ void RouteResum(void);
 void ParaInit(void);
 void Version(void);
 void ListCmd(void);
-void send_packet(void);
+
 #endif 
 

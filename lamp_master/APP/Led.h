@@ -15,19 +15,19 @@
 #define LEDn                             3
 
 //串口接收灯
-#define RXLED_PIN                         GPIO_Pin_12
-#define RXLED_GPIO_PORT                   GPIOC
-#define RXLED_GPIO_CLK                    RCC_APB2Periph_GPIOC 
+#define RXLED_PIN                         GPIO_Pin_1
+#define RXLED_GPIO_PORT                   GPIOB
+#define RXLED_GPIO_CLK                    RCC_APB2Periph_GPIOB  
 
 //串口发送灯
-#define TXLED_PIN                         GPIO_Pin_2
-#define TXLED_GPIO_PORT                   GPIOD
-#define TXLED_GPIO_CLK                    RCC_APB2Periph_GPIOD  
+#define TXLED_PIN                         GPIO_Pin_11
+#define TXLED_GPIO_PORT                   GPIOA
+#define TXLED_GPIO_CLK                    RCC_APB2Periph_GPIOA  
 
 //网络灯
-#define NETLED_PIN                        GPIO_Pin_3
-#define NETLED_GPIO_PORT                  GPIOB
-#define NETLED_GPIO_CLK                   RCC_APB2Periph_GPIOB
+#define NETLED_PIN                        GPIO_Pin_12
+#define NETLED_GPIO_PORT                  GPIOA
+#define NETLED_GPIO_CLK                   RCC_APB2Periph_GPIOA
 
 
 /*************** 结构定义 ***************/

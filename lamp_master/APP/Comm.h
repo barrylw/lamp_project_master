@@ -46,9 +46,4 @@ void Comm_Init(FunctionalState dogstate,u8 dogtime);
 void Comm_Proc();
 
 
-
-
-
-
-
 #endif

@@ -56,11 +56,8 @@ u8 MemCmp(void *pDsc, void*pSrc, u16 len);
 *！！！！！！！！！！！！！！！！！！！！！！！！！！*/
 u8 MemCmpData(const u8 *buf,u8 data,u16 len);
 
-void * w_memcpy( void *out, const void *in, unsigned int n);
-void *w_memset(void *out, int value, unsigned int n);
-
-#define memcpy(dest, src, count)   w_memcpy(dest, src, count)
-#define memset(dest, value, count) w_memset(dest, value, count)
+#define memcpy(dest, src, count)   MemCpy(dest, src, count)
+#define memset(dest, value, count) MemSet(dest, value, count)
 
 #endif
 
