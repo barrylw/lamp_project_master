@@ -1,0 +1,4 @@
+---- sVersion Matches (3 in 3 files) ----
+Main.c (app):const sVersion Ver = 
+MCP.c (app):extern const sVersion Ver;//∞Ê±æ–≈œ¢
+MCP.h (app):}sVersion; 

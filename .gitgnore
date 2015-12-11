@@ -2,7 +2,3 @@ Debug/
 Release/
 settings/
 SI/
-*.dep
-*.ewd
-*.ewp
-*.eww
