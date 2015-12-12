@@ -24,19 +24,14 @@ extern ST_EVENT_CONTROL sRFTransmitEvent;
 *！！！！！！！！！！！！！！！！！！！！！！！！！！*/
 int main()
 {
-
-  
   for (u8 i = 0; i < 150; i++)
   {
     tedtbuf[i] = i+1;
   }
-  
+
   Comm_Init(ENABLE,1);
- 
-  
   Phy_Init();
   init_update();
-   
   
   printf("start app\r\n");
   process_init();

@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1423955353
+Checksum=-140826740
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -38,11 +38,13 @@ ITMportsLogFile=0
 ITMlogFile=$PROJ_DIR$\ITM.log
 [array_types]
 Fmt0=u8[100]	4	0
-Fmt1=u8[15]	5	0
-Fmt2=u8[255]	4	0
-Fmt3=u8[256]	4	0
-Fmt4=u8[4]	4	0
-Fmt5=u8[8]	4	0
+Fmt1=u8[10]	4	0
+Fmt2=u8[15]	5	0
+Fmt3=u8[200]	5	0
+Fmt4=u8[255]	4	0
+Fmt5=u8[256]	4	0
+Fmt6=u8[4]	4	0
+Fmt7=u8[8]	4	0
 [watch_formats]
 Fmt0={W}0:erase_type	4	0
 Fmt1={W}0:opmoe	4	0

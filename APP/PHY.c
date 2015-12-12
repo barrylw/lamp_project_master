@@ -28,8 +28,8 @@ __root const Manufacturer_Version phyVersion =
 {
   {'B', 'R'},    //厂商代码 
   {'2', '3'},    //芯片代码
-   0x19, 0x03, 0x14,//日月年
-  {0x04, 0x02}//版本
+   0x15, 0x12, 0x11,//日月年
+  {0x07, 0x00}//版本
 };
 
 u8 phyCurrentChannel = 0;
@@ -130,4 +130,24 @@ u8 Phy_GetData(u16* psdulen, u8* psdu, u8* rssi)
   return 0;
 }
 
+
+void ReadVersion(void)
+{
+  u8 buf[sizeof(Manufacturer_Version)];
+  
+  buf[0] = phyVersion.venderID[0];
+  buf[1] = phyVersion.venderID[1];
+  buf[2] = phyVersion.chipID[0];
+  buf[3] = phyVersion.chipID[1];
+  buf[4] = phyVersion.date;
+  buf[5] = phyVersion.month;
+  buf[6] = phyVersion.year;
+  buf[7] = phyVersion.version[0];
+  buf[8] = phyVersion.version[1];
+  
+  printf("APL Version=%c%c%c%c-%02x%02x%02x-V%02x.%02x\r\n", \
+     buf[1], buf[0], buf[3], buf[2], buf[6], buf[5], buf[4], buf[8], buf[7]);
+     
+ 
+}
 /******************* (C) COPYRIGHT 2013 Robulink Technology Ltd.*****END OF FILE****/

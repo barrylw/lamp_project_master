@@ -280,7 +280,7 @@ typedef struct
 
 #define FLASH_APPLICATION_BACK_ADDRESS                 0
 
-#define FLASH_UPDATE_PARAMS_ADDRESS                    0x0803FFFF
+#define FLASH_UPDATE_PARAMS_ADDRESS                    0x0803F800
 
 /* Exported functions ------------------------------------------------------- */
 

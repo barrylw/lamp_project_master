@@ -773,9 +773,9 @@ void ParaInit(void)
 void Version(void)
 {  
   //Aps_Print_VerInfo();
-  resettime = BKP_ReadBackupRegister(BKP_DR3);
-  DISP(printf("SYS: 异常复位次数 %d\r\n",resettime););
-
+  //resettime = BKP_ReadBackupRegister(BKP_DR3);
+  //DISP(printf("SYS: 异常复位次数 %d\r\n",resettime););
+  ReadVersion();
   return;
 }
 
@@ -832,6 +832,8 @@ void send_packet(void)
 
 void read_all_flash(void)
 {
+  u8 buf[200];
+  /*
   u32 addr = 4096;
   u8  temp;
   
@@ -841,4 +843,13 @@ void read_all_flash(void)
      printf("%.2x ", temp);
    }
     printf("\r\n");
+  */
+  write_finish_debug();
+  update_software_check(36941);
+
+}
+
+void set_debug(void)
+{
+  
 }

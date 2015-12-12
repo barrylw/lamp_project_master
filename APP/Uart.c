@@ -894,11 +894,11 @@ bool check_update_state(u16 total_packets)
  *
  *
 *****************************************************************************/
-u8 update_software_check(u16 totalBytes)
+u8 update_software_check(u32 totalBytes)
 {
   u16 temp;
   u16 crc16 = 0xFFFF;
-  u16 count = totalBytes ;
+  u32 count = totalBytes -2;
   u8 flash_temp;
   u32 current_flash_addr = FLASH_APPLICATION_BACK_ADDRESS;
 
@@ -1010,7 +1010,7 @@ void write_update_flash(ST_UPDATE *st_update_Structure )
      tempBuf[UPDATE_CRC_POS]               =  (u8)((st_update_Structure->crcValue >>8)&0xFF);
      tempBuf[UPDATE_CRC_POS + 1]           =  (u8)(st_update_Structure->crcValue & 0xFF);
 
-    if (STM32_FlashPageErase(FLASH_UPDATE_PARAMS_ADDRESS) == FLASH_COMPLETE)
+    if (STM32_FlashPageErase(FLASH_UPDATE_PARAMS_ADDRESS) == FLH_SUCCESS)
     {
        STM32_FlashWrite( FLASH_UPDATE_PARAMS_ADDRESS,  tempBuf, TOTAL_UPDATE_BYTE);
     }  
@@ -1029,6 +1029,19 @@ void reset_update_params(void)
 {
     memset(&st_update, 0 , sizeof(st_update));
     write_update_flash(&st_update);   
+}
+
+
+void write_finish_debug(void)
+{
+   ST_UPDATE tempupdate;
+   
+   tempupdate.version = 5;
+   tempupdate.current_packet_No = 287;
+   tempupdate.totoalBytes  = 53;
+   tempupdate.total_packets = 289;
+   tempupdate.status        = UPDATE_FINISH;
+   write_update_flash(&tempupdate );
 }
 
 /*****************************************************************************
@@ -1095,7 +1108,7 @@ void get_packet_info(u8 * buf, ST_update_packet_info * packet_info)
     packet_info->file_property       =  buf[1];
     packet_info->file_instr          =  buf[2];
     packet_info->total_packets       =  buf[3] + buf[4]*256;
-    packet_info->current_packet_No   =  buf[5] + buf[6]*256;
+    packet_info->current_packet_No   =  buf[5] + buf[6]*256 + buf[7] + buf[8];
     packet_info->packet_length       =  buf[9] + buf[10]*256;
     packet_info->data                =  buf + 11;
 }
@@ -1104,6 +1117,14 @@ void get_packet_info(u8 * buf, ST_update_packet_info * packet_info)
 //允许接收后，判断，存储
 bool proceess_packet(ST_update_packet_info * current_ptr, ST_UPDATE * flash_ptr)
 {
+   
+  u32 totoalBytes;
+     //重复帧不处理,仅应答
+    if (check_update_packect_state( current_ptr->current_packet_No) == 1)
+    {
+        printf("the same packet\r\n");
+        return FALSE;
+    }
     printf("write packet %d in flash\r\n", current_ptr->current_packet_No);
      //1、先将数据写入flash
     FLASH_Write_update_page(current_ptr->current_packet_No, current_ptr->data, current_ptr->packet_length);
@@ -1111,7 +1132,11 @@ bool proceess_packet(ST_update_packet_info * current_ptr, ST_UPDATE * flash_ptr)
     
     if (current_ptr->current_packet_No == (current_ptr->total_packets - 1))
     {
-      flash_ptr->totoalBytes = (current_ptr->total_packets - 1)*UPDATE_DEFAULT_PACKET_SIZE + current_ptr->packet_length;
+       totoalBytes = (current_ptr->total_packets - 1)*UPDATE_DEFAULT_PACKET_SIZE + current_ptr->packet_length;
+      
+       flash_ptr->totoalBytes = current_ptr->packet_length;
+       
+        printf("total updte bytes = %d\r\n", totoalBytes);
     }
     set_update_packetState(current_ptr->current_packet_No);
 
@@ -1120,7 +1145,7 @@ bool proceess_packet(ST_update_packet_info * current_ptr, ST_UPDATE * flash_ptr)
     {
         printf("all packet received\r\n");
         //4、完整读出flash验证 
-        if (update_software_check(flash_ptr->totoalBytes) == 0)
+        if (update_software_check(totoalBytes) == 0)
         {   //5、验证正确,升级成功
             flash_ptr->status = UPDATE_FINISH;
             //6、更新升级参数
@@ -1175,49 +1200,32 @@ PROCESS_THREAD(apl_update_process, ev, data)
                 continue; //升级包序号错误
             }
 
-            if ( (st_update.status == UPDATE_END) && (st_update_packet.current_packet_No == 0) )//开始升级
+            if (st_update_packet.current_packet_No == 0)//开始升级
             {
                 printf("update start\r\n");
                 memset(&st_update, 0 , sizeof(st_update));
                 
-                
                 GDflash_erase(0,  BLOCK_ERASE_64K);
-                etimer_set(&update_timer, 1000);
-                PROCESS_WAIT_EVENT_UNTIL((ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &update_timer));
-                
                 GDflash_erase(65536,  BLOCK_ERASE_64K);
                 etimer_set(&update_timer, 1000);
                 PROCESS_WAIT_EVENT_UNTIL((ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &update_timer));
                 
-                
+               
                 //总字节数在收到最后一帧的时候计算
                 st_update.status        = UPDATE_RUNNING;
                 st_update.total_packets = st_update_packet.total_packets;
                 printf("update_totalPackets = %d\r\n", st_update.total_packets);
             }
-            else if (st_update.status == UPDATE_RUNNING)
-            {
-                //重复帧不处理
-                if (check_update_packect_state( st_update_packet.current_packet_No) == 1)
-                {
-                    printf("the same packet\r\n");
-                    continue;
-                }
-            }
             else
             {
-               //当升级状态为finish的时候，再本程序设计中是不存在的，
-               //当为finish的时候，会自动复位，APP程序中，会把finish状态檫除
-               //但是在以后的升级中，可能会存在，在升级完成后，必须要接收到升级指令，才升级，所以程序可能存在finish的升级状态
-               memset(&st_update, 0 , sizeof(st_update));
-              continue;
-            }
-            
-             //存储，应答
-            if (st_update_packet.current_packet_No == (st_update_packet.total_packets - 1))
-            {
-               st_update.totoalBytes = (st_update_packet.total_packets - 1)*UPDATE_DEFAULT_PACKET_SIZE + st_update_packet.packet_length;
-               printf("total updte bytes = %d\r\n", st_update.totoalBytes);
+              if (st_update.status != UPDATE_RUNNING)
+              {
+                  //当升级状态为finish的时候，再本程序设计中是不存在的，
+                  //当为finish的时候，会自动复位，APP程序中，会把finish状态檫除
+                  //但是在以后的升级中，可能会存在，在升级完成后，必须要接收到升级指令，才升级，所以程序可能存在finish的升级状态
+                  reset_update_params();
+                  continue;
+              }
             }
             
             update_finish_state = proceess_packet(&st_update_packet, &st_update);
@@ -1262,12 +1270,15 @@ PROCESS_THREAD(apl_update_process, ev, data)
               update_finish_state = FALSE;
               etimer_set(&update_timer, 500);
               PROCESS_WAIT_EVENT_UNTIL((ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &update_timer));
-              //SysReset();
-              printf("update similation ok\r\n");
-              
-              
+              SysReset();
             }
-            
+            else if ( (update_finish_state == FALSE) && (st_update_packet.current_packet_No == (st_update_packet.total_packets - 1)))
+            {
+                update_finish_state = FALSE;
+                reset_update_params();
+                  printf("update false \r\n");
+                
+            }
           }
     }
     
