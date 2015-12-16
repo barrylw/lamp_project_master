@@ -94,7 +94,7 @@ u8 Phy_GetData(u16* psdulen, u8* psdu, u8* rssi);
 
 void Phy_CCA_Request(void);
 u8 Phy_Data_Request(u16 psduLen, u8 *psdu, u8 channel);
-
+void ReadVersion(void);
 extern void Mac_CCA_Confirm(u8 status);
 
 #endif /* __PHY_H__ */

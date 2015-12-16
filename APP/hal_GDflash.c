@@ -176,7 +176,6 @@ address for the Sector Erase (SE) command
 */
 void GDflash_erase(u32 startAddr, GDFLASH_ERASE_TYPE erase_type)
 {
-  #pragma pack(show)
   while ((GDflash_read_status_reg() & 0x01) == 1 );
   
   GDflash_write_enable(TRUE);

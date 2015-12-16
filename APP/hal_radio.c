@@ -241,16 +241,15 @@ PROCESS_THREAD(hal_RF_process, ev, data)
               g_RF_LoRa.rf_DataBufferValid = false;
               
               LED_On(TX_LED);
-              
-              Delayms(100);
+             
+              //Delayms(100);
               
               hal_radio_645_process();
          
               /*
               hal_UartDMATx(COM1, g_RF_LoRa.rf_DataBuffer, g_RF_LoRa.rf_RxPacketSize);
              
-              printf("rssi = %f\r\n", SX1276LoRaGetPacketRssi());
-              printf("snr = %d\r\n",SX1276LoRaGetPacketSnr());
+          
          
               for (u8 i = 0; i < g_RF_LoRa.rf_RxPacketSize; i++ )
               {
@@ -427,6 +426,117 @@ PROCESS_THREAD(hal_long_send, ev, data)
   PROCESS_END();
 }
 #endif
+
+
+PROCESS(apl_update_slaveNode_process, "update_slave");
+PROCESS_THREAD(apl_update_slaveNode_process, ev, data)
+{
+    static struct etimer update_slave_timer; 
+    static u8 buf[200];
+    static ST_update_slave_info update_slave;
+    static u32 left_data;
+    static bool update_status_paused = false;
+    
+
+    PROCESS_BEGIN();
+    
+    while (1)
+    {
+         PROCESS_WAIT_EVENT();
+         
+         if (ev == PROCESS_EVENT_MSG)
+         {
+              if (((ST_UPDATE*)data)->status != UPDATE_SALVE)
+              {     
+                 printf("no update file\r\n");
+                 continue;
+              }
+              else
+              {
+                  update_status_paused = false;
+                  printf("start update slave node\r\n");
+                  update_slave.version            = ((ST_UPDATE*)data)->version;
+                  update_slave.lastBytes          = ((ST_UPDATE*)data)->lastBytes;
+                  update_slave.total_packets      = ((ST_UPDATE*)data)->total_packets;
+                  left_data                       = (((ST_UPDATE*)data)->total_packets - 1)*128 +  update_slave.lastBytes;
+                  update_slave.total_bytes        = left_data;
+
+                  update_slave.current_packet_No  = 0;
+                  update_slave.packet_length      =  (left_data >=64)? 64: left_data;   
+                  etimer_set(&update_slave_timer, 1000);
+              }
+         }/*
+         else if (ev == UPDATE_STOP)
+         {
+           update_status_paused = true;
+           etimer_stop(&update_slave_timer);
+           PROCESS_WAIT_EVENT();
+         }
+         else if (ev == UPDATE_CONTINUE)
+         {
+             if (update_status_paused)
+             {
+                 update_status_paused = false;
+                 printf("continue update\r\n");
+                 etimer_set(&update_slave_timer, 100);
+             }
+         }*/
+         else if (  (ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &update_slave_timer) )
+         {
+           if ( update_slave.current_packet_No < update_slave.total_packets)
+           {
+                buf[0]  = 0x68;                                    //长度10
+                MemSet(&buf[1], 0x99, 6); 
+                buf[7]  = 0x68;
+                buf[8]  = 0x14; //写
+                buf[9]  = update_slave.packet_length + 4 +9;          //L
+                
+                buf[10] = 0x01;                                    // 长度4
+                buf[11] = 0x00;
+                buf[12] = 0x00;
+                buf[13] = 0x6A;
+                
+               buf[14] = (u8)((update_slave.version >> 8) & 0xFF);
+               buf[15] = (u8)(update_slave.version  & 0xFF);
+               
+               buf[16] = (u8)((update_slave.total_bytes >> 8) & 0xFF);
+               buf[17] = (u8)(update_slave.total_bytes  & 0xFF);
+               
+               buf[18] = (u8)((update_slave.total_packets >> 8) & 0xFF);
+               buf[19] = (u8)(update_slave.total_packets  & 0xFF);
+               
+               buf[20] = (u8)((update_slave.current_packet_No >> 8) & 0xFF);
+               buf[21] = (u8)(update_slave.current_packet_No  & 0xFF);
+               
+               buf[22] = (u8)(update_slave.packet_length  & 0xFF);   
+            
+               GDflash_read(update_slave.current_packet_No*64, &buf[23],  update_slave.packet_length); // update_slave.packet_length
+           
+               for (u8 i = 0; i < buf[9]; i++)
+               {
+                 buf[10 + i] += 0x33;
+               }
+                buf[23 + update_slave.packet_length] = GetChecksum(buf,  23 + update_slave.packet_length);
+                buf[24 + update_slave.packet_length] = 0x16;
+                
+                printf("update packet %d\r\n",  update_slave.current_packet_No);
+                SX1276LoRa_Send_Packet(buf, 25 + update_slave.packet_length);
+                etimer_set(&update_slave_timer, 3000);
+                PROCESS_WAIT_EVENT_UNTIL ( (ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &update_slave_timer) );
+                
+                left_data                     -= update_slave.packet_length;
+                update_slave.packet_length     =  (left_data >=64)? 64: left_data;
+                update_slave.current_packet_No++;
+          }
+          else
+          {
+              printf("update finish\r\n");
+          }
+          
+      }
+    }
+    PROCESS_END();
+}
 
 /*****************************************************************************
  Prototype    : spiReadWriteByte

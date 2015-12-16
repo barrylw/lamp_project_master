@@ -141,6 +141,16 @@ typedef enum
   DATA_PACKET_645_POINT = 14
 }em_645_point;
 
+typedef struct
+{
+  u16 version;
+  u16 lastBytes;
+  u16 total_packets;
+  u16 current_packet_No;
+  u16 total_bytes;
+  u8  packet_length;
+}ST_update_slave_info;
+
 #endif
 
 /* Exported macro ------------------------------------------------------------*/
@@ -207,6 +217,6 @@ void hal_sRF_FSK_ITConfig( uint32_t irqLine, FunctionalState NewState);
 PROCESS_NAME(hal_RF_process);
 PROCESS_NAME(hal_long_send);
 PROCESS_NAME(hal_RF_reset);
-
+PROCESS_NAME(apl_update_slaveNode_process);
 
 /******************* (C) COPYRIGHT 2013 Robulink Technology Ltd.*****END OF FILE****/

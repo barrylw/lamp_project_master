@@ -234,12 +234,13 @@ typedef enum
     UPDATE_FINISH,
     UPDATE_SUCCESS,
     UPDATE_FAILED,
+    UPDATE_SALVE,
 }EM_UPDATE_STATUS;
 
 
 typedef struct
 {
-  u16 totoalBytes;
+  u16 lastBytes;
   u16 total_packets;
   u16 current_packet_No;
   u16 crcValue;
@@ -296,6 +297,7 @@ int printf(const char *format ,... );
 void apl_ProcessUartCmd(void);
 
 void Uart_Send(COM_TypeDef COM, u8* buff, u16 len);
+void init_update(void);
 
 PROCESS_NAME(hal_urat_process);
 PROCESS_NAME(apl_update_process);

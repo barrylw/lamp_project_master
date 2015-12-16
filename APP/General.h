@@ -79,6 +79,6 @@ len:数据长度
 * 功能说明：内存打印
 *——————————————————————————*/
 void PrintBuff(u8 *pBuf, u16 len);
-
+u8 GetChecksum(u8 *pbuffer, u16 length);
 #endif
 

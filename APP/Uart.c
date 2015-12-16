@@ -17,6 +17,8 @@
 #include "Led.h"
 #include "sx1276-LoRa.h"
 #include "hal_gdflash.h"
+#include "General.h"
+#include "hal_radio.h"
 /** @addtogroup USART
   * @{
   */
@@ -436,16 +438,7 @@ void hal_UartDMATx(COM_TypeDef COM, u8 *pBuf, u16 length)
 }
 
 
-u8 GetChecksum(u8 *pbuffer, u16 length)
-{
-  u8 sum = 0;
 
-  while (length--)
-  {
-    sum += *pbuffer++;
-  }
-  return sum;
-}
 
 /**
   * @brief  Process uart command.
@@ -980,7 +973,7 @@ bool read_update_flash(ST_UPDATE *st_update_Structure)
     
     u8 * update_flash_start_ptr = (u8*)FLASH_UPDATE_PARAMS_ADDRESS;
     st_update_Structure->version       = update_flash_start_ptr[UPDATE_VERSION_POS]*256 + update_flash_start_ptr[UPDATE_VERSION_POS + 1];
-    st_update_Structure->totoalBytes   = update_flash_start_ptr[UPDATE_TOTAL_BYTE_POS]*256 + update_flash_start_ptr[UPDATE_TOTAL_BYTE_POS + 1];
+    st_update_Structure->lastBytes     = update_flash_start_ptr[UPDATE_TOTAL_BYTE_POS]*256 + update_flash_start_ptr[UPDATE_TOTAL_BYTE_POS + 1];
     st_update_Structure->total_packets = update_flash_start_ptr[UPDATE_TOTAL_PACKETS_POS]*256 + update_flash_start_ptr[UPDATE_TOTAL_PACKETS_POS + 1];
     st_update_Structure->status        = update_flash_start_ptr[UPDATE_STATE_POS];
     st_update_Structure->crcValue      = update_flash_start_ptr[UPDATE_CRC_POS] *256 + update_flash_start_ptr[UPDATE_CRC_POS + 1];
@@ -999,8 +992,8 @@ void write_update_flash(ST_UPDATE *st_update_Structure )
   
      tempBuf[UPDATE_VERSION_POS]           = (u8)(st_update_Structure->version/256);
      tempBuf[UPDATE_VERSION_POS + 1]       = (u8)(st_update_Structure->version%256);
-     tempBuf[UPDATE_TOTAL_BYTE_POS]        = (u8)((st_update_Structure->totoalBytes >>8)&0xFF);
-     tempBuf[UPDATE_TOTAL_BYTE_POS + 1]    = (u8)(st_update_Structure->totoalBytes & 0xFF);
+     tempBuf[UPDATE_TOTAL_BYTE_POS]        = (u8)((st_update_Structure->lastBytes >>8)&0xFF);
+     tempBuf[UPDATE_TOTAL_BYTE_POS + 1]    = (u8)(st_update_Structure->lastBytes & 0xFF);
      tempBuf[UPDATE_TOTAL_PACKETS_POS]     = (u8)((st_update_Structure->total_packets >>8)&0xFF);
      tempBuf[UPDATE_TOTAL_PACKETS_POS + 1] = (u8)(st_update_Structure->total_packets & 0xFF);
      tempBuf[UPDATE_STATE_POS]             =  st_update_Structure->status;
@@ -1034,14 +1027,7 @@ void reset_update_params(void)
 
 void write_finish_debug(void)
 {
-   ST_UPDATE tempupdate;
    
-   tempupdate.version = 5;
-   tempupdate.current_packet_No = 287;
-   tempupdate.totoalBytes  = 53;
-   tempupdate.total_packets = 289;
-   tempupdate.status        = UPDATE_FINISH;
-   write_update_flash(&tempupdate );
 }
 
 /*****************************************************************************
@@ -1061,19 +1047,12 @@ void init_update(void)
   switch (st_update.status)
   {
     case UPDATE_RUNNING:
-      if (st_update.totoalBytes == 0) /*  处于升级但是没有收到数据 ,错误 */
-      {
-        reset_update_params();
-      }
     break;
-
-    case UPDATE_FINISH:
-      //这里在以后会出现这种情况，升级数据接收成功，但是没有接收到升级指令，就不升级，复位后升级状态表示finish
-      //本次程序不会出现这种情况
-    break;
-
-    case UPDATE_END:
-     memset(&st_update, 0 , sizeof(st_update));
+    
+    case  UPDATE_FINISH:
+    case  UPDATE_SALVE:
+    memset(&st_update, 0 , sizeof(st_update));
+    reset_update_params();
     break;
     
     case UPDATE_FAILED:
@@ -1085,9 +1064,8 @@ void init_update(void)
       printf("update successful\r\n");
       reset_update_params();
     break;
-
+    
     default:
-      reset_update_params();
     break; 
   }
 }
@@ -1134,7 +1112,7 @@ bool proceess_packet(ST_update_packet_info * current_ptr, ST_UPDATE * flash_ptr)
     {
        totoalBytes = (current_ptr->total_packets - 1)*UPDATE_DEFAULT_PACKET_SIZE + current_ptr->packet_length;
       
-       flash_ptr->totoalBytes = current_ptr->packet_length;
+       flash_ptr->lastBytes = current_ptr->packet_length;
        
         printf("total updte bytes = %d\r\n", totoalBytes);
     }
@@ -1147,7 +1125,22 @@ bool proceess_packet(ST_update_packet_info * current_ptr, ST_UPDATE * flash_ptr)
         //4、完整读出flash验证 
         if (update_software_check(totoalBytes) == 0)
         {   //5、验证正确,升级成功
-            flash_ptr->status = UPDATE_FINISH;
+            if (current_ptr->file_indication == 0x03)
+            {
+                flash_ptr->status = UPDATE_FINISH;
+            }
+            else if (current_ptr->file_indication == 0x10)
+            {
+               flash_ptr->status = UPDATE_SALVE;
+            }
+            else
+            {
+                //7、错误，复位升级数据
+                reset_update_params();
+                printf("update file indication err\r\n");
+                return false;
+            }
+          
             //6、更新升级参数
             write_update_flash(flash_ptr);
             //测试用，到时候修改
@@ -1256,8 +1249,6 @@ PROCESS_THREAD(apl_update_process, ev, data)
             
             Uart_Send(COM1, g_UartTxBuffer,  19);
             
-            
-
             printf("ack to master update packet\r\n");
             for (u8 i = 0; i< 19; i++)
             {
@@ -1268,22 +1259,35 @@ PROCESS_THREAD(apl_update_process, ev, data)
             if (update_finish_state)
             {
               update_finish_state = FALSE;
-              etimer_set(&update_timer, 500);
-              PROCESS_WAIT_EVENT_UNTIL((ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &update_timer));
-              SysReset();
+              if ( st_update_packet.file_indication == 0x010 )
+              {
+                 printf("update data ok, update slave lamp,but not process\r\n");
+                 //process_post(&apl_update_slaveNode_process, PROCESS_EVENT_MSG,  &st_update);
+              }
+              else if (st_update_packet.file_indication == 0x03 )
+              {
+                  printf("update data OK, update master self\r\n");
+                  etimer_set(&update_timer, 300);
+                  PROCESS_WAIT_EVENT_UNTIL((ev == PROCESS_EVENT_TIMER) && ((struct etimer *)data == &update_timer));
+                  SysReset();
+              }
+              else
+              {
+                  printf("update data OK, but file_indication error \r\n");
+                  reset_update_params();
+              }
             }
             else if ( (update_finish_state == FALSE) && (st_update_packet.current_packet_No == (st_update_packet.total_packets - 1)))
             {
                 update_finish_state = FALSE;
                 reset_update_params();
-                  printf("update false \r\n");
-                
+                printf("update false \r\n");
             }
           }
     }
-    
     PROCESS_END();
 }
+
 
 
 

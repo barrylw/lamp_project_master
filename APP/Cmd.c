@@ -832,21 +832,6 @@ void send_packet(void)
 
 void read_all_flash(void)
 {
-  u8 buf[200];
-  /*
-  u32 addr = 4096;
-  u8  temp;
-  
-   for (u32 i = 0; i < 128; i++)
-   {
-     GDflash_read(i+ addr, &temp, 1);
-     printf("%.2x ", temp);
-   }
-    printf("\r\n");
-  */
-  write_finish_debug();
-  update_software_check(36941);
-
 }
 
 void set_debug(void)

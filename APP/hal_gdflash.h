@@ -103,6 +103,6 @@ void GDflash_test(void);
 void GDflash_128KByte_erase(void);
 void GDflash_read(u32 startAddr, u8 *buf, u32 length);
 void GDflash_write(u32 startAddr, u8 *buf, u32 length);
-
+void GDflash_erase(u32 startAddr, GDFLASH_ERASE_TYPE erase_type);
 
 #endif

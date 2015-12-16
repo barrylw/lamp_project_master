@@ -243,3 +243,15 @@ void PrintBuff(u8 *pBuf, u16 len)
 
   LIST(printf("\r\n"););
 }
+
+
+u8 GetChecksum(u8 *pbuffer, u16 length)
+{
+  u8 sum = 0;
+
+  while (length--)
+  {
+    sum += *pbuffer++;
+  }
+  return sum;
+}

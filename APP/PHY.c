@@ -28,8 +28,8 @@ __root const Manufacturer_Version phyVersion =
 {
   {'B', 'R'},    //厂商代码 
   {'2', '3'},    //芯片代码
-   0x15, 0x12, 0x11,//日月年
-  {0x07, 0x00}//版本
+   0x16, 0x12, 0x15,//日月年
+  {0x02, 0x00}//版本
 };
 
 u8 phyCurrentChannel = 0;
